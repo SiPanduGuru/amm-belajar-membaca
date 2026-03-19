@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMM Unit 3: Kompleks</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Inter:wght@800;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --p: #7209B7; --s: #4CC9F0; --dark: #1A1A1A; --bg: #F8F7FF; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; }
+        
+        .book { width: 100%; max-width: 500px; background: white; min-height: 100vh; display: flex; flex-direction: column; border: 3px solid #333; }
+        
+        .header { background: var(--p); color: white; padding: 20px; text-align: center; }
+        .header h1 { font-family: 'Fredoka One'; margin: 0; font-size: 1.2rem; }
+        .unit-tag { background: rgba(255,255,255,0.2); font-size: 0.7rem; padding: 4px 12px; border-radius: 10px; margin-top: 5px; display: inline-block; }
+
+        .content { flex: 1; padding: 25px; }
+        .section-info { text-align: center; color: #666; font-size: 0.85rem; margin-bottom: 25px; font-weight: bold; border-bottom: 2px dashed #eee; padding-bottom: 15px; }
+
+        /* Word Styling */
+        .word-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .word-card { 
+            background: #fff; border: 2px solid #333; border-radius: 15px; 
+            padding: 18px; text-align: center; font-size: 1.8rem; font-weight: 900;
+            cursor: pointer; box-shadow: 4px 4px 0 #333; transition: 0.1s;
+        }
+        .word-card span.combo { color: var(--p); background: #F2E7FE; padding: 0 4px; border-radius: 5px; }
+        .word-card span.diftong { color: #F72585; border-bottom: 4px double #F72585; }
+        .word-card:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #333; }
+
+        .teacher-box { margin: 20px; padding: 15px; background: #E7F0FF; border-radius: 12px; border: 1px solid #B8D4FF; }
+        textarea { width: 100%; border: none; background: transparent; font-family: inherit; outline: none; resize: none; font-weight: 600; font-size: 0.9rem; }
+
+        .nav { padding: 15px; display: flex; gap: 10px; background: #fff; border-top: 2px solid #333; }
+        .btn { flex: 1; padding: 15px; border-radius: 10px; border: 2px solid #333; font-family: 'Fredoka One'; cursor: pointer; box-shadow: 0 4px 0 #333; }
+        .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #333; }
+    </style>
+</head>
+<body>
+
+<div class="book">
+    <div class="header">
+        <h1 id="title">BAGIAN A: HURUF GANDA</h1>
+        <div class="unit-tag">Target: NY, KH, SY, NG</div>
+    </div>
+
+    <div class="content">
+        <div class="section-info" id="info">Dua huruf ini suaranya jadi SATU. Jangan dipisah!</div>
+        <div class="word-grid" id="grid">
+            </div>
+    </div>
+
+    <div class="teacher-box">
+        <b style="font-size: 0.7rem; color: #4361EE;">EVALUASI UNIT 3:</b>
+        <textarea id="note" rows="2" placeholder="Anak lancar di NY, tapi bingung di KH..."></textarea>
+    </div>
+
+    <div class="nav">
+        <button class="btn" style="background:#eee" onclick="move(-1)">KIRI</button>
+        <button class="btn" style="background:var(--s); color:white" onclick="move(1)">KANAN</button>
+    </div>
+</div>
+
+<script>
+    const unit3Data = [
+        {
+            title: "BAGIAN A: NY (GANDA)",
+            info: "Huruf N & Y kalau ketemu jadi bunyi SENYUM (Ny..)",
+            type: "combo",
+            words: [["NYA", "NYI"], ["NYA", "MU"], ["NYO", "NYA"], ["SU", "NYI"], ["HA", "NYA"], ["PE", "NYU"]]
+        },
+        {
+            title: "BAGIAN A: KH & SY (GANDA)",
+            info: "Huruf KH (seperti batuk) & SY (seperti minta diam)",
+            type: "combo",
+            words: [["KHU", "SUS"], ["A", "KHIR"], ["KHA", "S"], ["SYA", "RAT"], ["SYU", "KUR"], ["MU", "SYA"]]
+        },
+        {
+            title: "BAGIAN B: AI & AU (DIFTONG)",
+            info: "Dua vokal yang dibaca meluncur cepat",
+            type: "diftong",
+            words: [["PAN", "TAI"], ["GU", "LAI"], ["TU", "PAI"], ["PU", "LAU"], ["DA", "NAU"], ["PI", "SAU"]]
+        },
+        {
+            title: "BAGIAN B: OI & CAMPURAN",
+            info: "Latihan akhir untuk semua jenis bunyi",
+            type: "diftong",
+            words: [["AM", "BOI"], ["KO", "BOI"], ["SE", "KOI"], ["NYA", "NYI"], ["KA", "LUA"], ["AU", "RA"]]
+        }
+    ];
+
+    let current = 0;
+    const notes = {};
+
+    function talk(t) {
+        window.speechSynthesis.cancel();
+        const m = new SpeechSynthesisUtterance(t);
+        m.lang = 'id-ID'; m.rate = 0.7;
+        window.speechSynthesis.speak(m);
+    }
+
+    function render() {
+        const item = unit3Data[current];
+        document.getElementById('title').innerText = item.title;
+        document.getElementById('info').innerText = item.info;
+        
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+
+        item.words.forEach(pair => {
+            const div = document.createElement('div');
+            div.className = 'word-card';
+            const spanClass = item.type;
+            div.innerHTML = `<span class="${spanClass}">${pair[0]}</span>${pair[1]}`;
+            // Untuk diftong, highlight biasanya di suku kata kedua
+            if(item.type === "diftong") {
+                div.innerHTML = `${pair[0]}<span class="${spanClass}">${pair[1]}</span>`;
+            }
+            div.onclick = () => talk(pair[0] + pair[1]);
+            grid.appendChild(div);
+        });
+        document.getElementById('note').value = notes[current] || "";
+    }
+
+    function move(d) {
+        notes[current] = document.getElementById('note').value;
+        current += d;
+        if(current < 0) current = 0;
+        if(current >= unit3Data.length) current = unit3Data.length - 1;
+        render();
+    }
+
+    render();
+</script>
+</body>
+</html>

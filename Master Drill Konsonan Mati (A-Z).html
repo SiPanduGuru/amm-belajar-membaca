@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMM Unit 2: Master KVK</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Inter:wght@800;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --p: #FF477E; --s: #4CC9F0; --dark: #1A1A1A; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: #fdfdfd; display: flex; justify-content: center; }
+        
+        .book { width: 100%; max-width: 500px; background: white; min-height: 100vh; display: flex; flex-direction: column; border-left: 2px solid #eee; border-right: 2px solid #eee; }
+        
+        .header { background: var(--dark); color: white; padding: 20px; text-align: center; position: sticky; top: 0; z-index: 10; }
+        .header h1 { font-family: 'Fredoka One'; margin: 0; font-size: 1.2rem; letter-spacing: 1px; }
+        .group-name { background: var(--p); font-size: 0.8rem; padding: 4px 15px; border-radius: 20px; display: inline-block; margin-top: 8px; font-weight: 900; }
+
+        .content { flex: 1; padding: 30px 20px; }
+        
+        /* Styling Kata KVK */
+        .word-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .word-card { 
+            font-size: 2.5rem; font-weight: 900; color: var(--dark); 
+            text-align: center; cursor: pointer; padding: 10px;
+            border-bottom: 4px solid #f0f0f0; transition: 0.1s;
+        }
+        .word-card span.tail { color: var(--p); text-decoration: underline; }
+        .word-card:active { transform: translateY(4px); border-color: var(--s); color: var(--s); }
+
+        .instruction { text-align: center; color: #888; font-size: 0.8rem; margin-bottom: 30px; font-weight: bold; text-transform: uppercase; }
+
+        .teacher-box { margin: 30px 20px; padding: 15px; background: #FFFBEB; border-radius: 15px; border: 1px solid #FEF3C7; }
+        textarea { width: 100%; border: none; background: transparent; font-family: inherit; font-size: 0.9rem; outline: none; resize: none; font-weight: 600; }
+
+        .nav { padding: 15px; display: flex; gap: 10px; background: white; border-top: 1px solid #eee; position: sticky; bottom: 0; }
+        .btn { flex: 1; padding: 15px; border-radius: 12px; border: 2px solid #333; font-family: 'Fredoka One'; cursor: pointer; box-shadow: 0 4px 0 #333; background: white; }
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #333; }
+        .btn-next { background: var(--dark); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="book">
+    <div class="header">
+        <h1 id="unit-title">UNIT 2: KONSONAN MATI</h1>
+        <div class="group-name" id="group-tag">AKHIRAN N</div>
+    </div>
+
+    <div class="content">
+        <p class="instruction">Baca bagian hitam, lalu tambahkan ekor merah</p>
+        <div class="word-grid" id="grid">
+            </div>
+    </div>
+
+    <div class="teacher-box">
+        <b style="font-size: 0.7rem; color: #B45309;">CATATAN GURU:</b>
+        <textarea id="note" rows="2" placeholder="Catat progres anak..."></textarea>
+    </div>
+
+    <div class="nav">
+        <button class="btn" onclick="move(-1)">KEMBALI</button>
+        <button class="btn btn-next" onclick="move(1)">LANJUT</button>
+    </div>
+</div>
+
+<script>
+    const kvkData = [
+        { group: "AKHIRAN N (SENAU)", words: [["MAKA","N"], ["BULA","N"], ["HUTA","N"], ["JALU","N"], ["SABU","N"], ["PANE","N"]] },
+        { group: "AKHIRAN M (SENAU)", words: [["TANA","M"], ["MINU","M"], ["KOLA","M"], ["JARA","M"], ["TALA","M"], ["KIRI","M"]] },
+        { group: "AKHIRAN NG (SENAU)", words: [["PISA","NG"], ["KACI","NG"], ["BURU","NG"], ["GUDI","NG"], ["TOLA","NG"], ["WEYA","NG"]] },
+        { group: "AKHIRAN S (DESIS)", words: [["PANA","S"], ["GELA","S"], ["KIPU","S"], ["TIKU","S"], ["LAPE","S"], ["TULI","S"]] },
+        { group: "AKHIRAN R (GETAR)", words: [["KASU","R"], ["PASE","R"], ["BIBI","R"], ["OBE","R"], ["ULU","R"], ["SAYU","R"]] },
+        { group: "AKHIRAN L (LIDAH)", words: [["KAPA","L"], ["MOBE","L"], ["BATA","L"], ["SULI","L"], ["KAWA","L"], ["TENA","L"]] },
+        { group: "AKHIRAN K (LETUP)", words: [["BATA","K"], ["ADIK"," "], ["BAPAK"," "], ["CIKA","K"], ["MASA","K"], ["RUSA","K"]] },
+        { group: "AKHIRAN T (HENTI)", words: [["LIA","T"], ["LOMU","T"], ["KULE","T"], ["SIPA","T"], ["RABA","T"], ["SARA","T"]] },
+        { group: "AKHIRAN B, P, D (JARANG)", words: [["ADA","B"], ["ATA","P"], ["ABU","D"], ["SAYA","P"], ["TATA","P"], ["LEDA","P"]] },
+        { group: "AKHIRAN G, J, Z (EKSTRIM)", words: [["GUDU","G"], ["GAJA","H"], ["IBI","Z"], ["AJA","B"], ["KAMA","J"], ["KHA","Z"]] }
+    ];
+
+    let current = 0;
+    const savedNotes = {};
+
+    function talk(t) {
+        window.speechSynthesis.cancel();
+        const m = new SpeechSynthesisUtterance(t);
+        m.lang = 'id-ID'; m.rate = 0.7;
+        window.speechSynthesis.speak(m);
+    }
+
+    function render() {
+        const item = kvkData[current];
+        document.getElementById('group-tag').innerText = item.group;
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+
+        item.words.forEach(pair => {
+            const div = document.createElement('div');
+            div.className = 'word-card';
+            div.innerHTML = `${pair[0]}<span class="tail">${pair[1]}</span>`;
+            div.onclick = () => talk(pair[0] + pair[1]);
+            grid.appendChild(div);
+        });
+        document.getElementById('note').value = savedNotes[current] || "";
+    }
+
+    function move(d) {
+        savedNotes[current] = document.getElementById('note').value;
+        current += d;
+        if(current < 0) current = 0;
+        if(current >= kvkData.length) current = kvkData.length - 1;
+        render();
+    }
+
+    render();
+</script>
+</body>
+</html>

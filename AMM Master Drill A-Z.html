@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AMM Master Drill A-Z</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Inter:wght@700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --p: #FF477E; --s: #4CC9F0; --text: #1A1A1A; --bg: #F8F9FA; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); display: flex; justify-content: center; }
+
+        .book { width: 100%; max-width: 480px; background: white; min-height: 100vh; display: flex; flex-direction: column; border-left: 1px solid #ddd; border-right: 1px solid #ddd; }
+        
+        /* Header Minimalis */
+        .header { padding: 25px 20px; border-bottom: 2px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .page-info { font-family: 'Fredoka One'; font-size: 1.5rem; color: var(--p); letter-spacing: 1px; }
+        .progress-tag { background: #eee; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 900; }
+
+        /* Area Fokus Huruf */
+        .focus-banner { padding: 40px 20px; text-align: center; }
+        .big-char { font-family: 'Fredoka One'; font-size: 7rem; line-height: 1; margin: 0; color: var(--text); }
+        .sub-focus { color: #888; font-size: 1rem; margin-top: 5px; text-transform: uppercase; letter-spacing: 3px; }
+
+        /* Daftar Kata Clean Grid */
+        .drill-container { flex: 1; padding: 0 30px; }
+        .word-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px 15px; }
+        .word-item { 
+            font-size: 2.2rem; font-weight: 900; color: var(--text); 
+            text-align: center; cursor: pointer; transition: 0.1s; 
+            padding: 10px; border-bottom: 3px solid #f0f0f0;
+        }
+        .word-item:active { color: var(--s); border-bottom-color: var(--s); transform: translateY(-3px); }
+
+        /* Penilaian Guru */
+        .teacher-box { margin: 40px 20px 20px; padding: 15px; background: #FFFBEB; border-radius: 15px; border: 2px solid #FEF3C7; }
+        .teacher-box b { font-size: 0.75rem; color: #B45309; display: block; margin-bottom: 8px; }
+        textarea { width: 100%; border: none; background: transparent; font-family: inherit; font-size: 0.9rem; outline: none; resize: none; font-weight: 600; }
+
+        /* Navigasi Bawah */
+        .nav { padding: 20px; display: flex; gap: 15px; background: white; border-top: 1px solid #eee; position: sticky; bottom: 0; }
+        .btn { flex: 1; padding: 18px; border-radius: 16px; border: none; font-family: 'Fredoka One'; font-size: 1rem; cursor: pointer; transition: 0.2s; }
+        .btn-prev { background: #eee; color: #666; }
+        .btn-next { background: var(--text); color: white; }
+        .btn:active { transform: scale(0.95); opacity: 0.8; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate { animation: fadeIn 0.3s ease-out; }
+    </style>
+</head>
+<body>
+
+<div class="book">
+    <div class="header">
+        <div class="page-info" id="pg-info">Halaman 1</div>
+        <div class="progress-tag" id="pg-tag">LEVEL 1</div>
+    </div>
+
+    <div class="focus-banner animate" id="banner">
+        <h1 class="big-char" id="main-char">B</h1>
+        <div class="sub-focus">Fokus Bunyi</div>
+    </div>
+
+    <div class="drill-container animate" id="drill-area">
+        <div class="word-grid" id="word-grid">
+            </div>
+    </div>
+
+    <div class="teacher-box">
+        <b>📝 CATATAN PERKEMBANGAN:</b>
+        <textarea id="note-area" rows="2" placeholder="Tulis di sini..."></textarea>
+    </div>
+
+    <div class="nav">
+        <button class="btn btn-prev" onclick="move(-1)">KEMBALI</button>
+        <button class="btn btn-next" onclick="move(1)">LANJUT</button>
+    </div>
+</div>
+
+<script>
+    const curriculum = [
+        { c: "B", w: ["BABA", "BABI", "BUBU", "BIBI", "BOBO", "BEBE", "BA-BA", "BI-BA", "BU-BI", "BE-BA"] },
+        { c: "C", w: ["CACA", "CICI", "CUCU", "CECE", "COCO", "BACA", "CABE", "CUCI", "CUMI", "CARI"] },
+        { c: "D", w: ["DADA", "DADI", "DADU", "DEDI", "DODO", "ADA", "DIA", "DASI", "DURI", "BADA"] },
+        { c: "G", w: ["GAGA", "GIGI", "GUGU", "GEGE", "GOGO", "GULA", "GUDI", "GACI", "DUGA", "BAGA"] },
+        { c: "H", w: ["HAHA", "HIHI", "HUHU", "HEHE", "HOHO", "HATI", "HARI", "DAHI", "BAHA", "HUDA"] },
+        { c: "J", w: ["JAJA", "JIJI", "JUJU", "JEJE", "JOJO", "BAJU", "JADI", "JAGA", "HAJI", "JARI"] },
+        { c: "K", w: ["KAKA", "KIKI", "KUKU", "KEKE", "KOKO", "KAKI", "KAKU", "KACA", "DUKA", "KAYU"] },
+        { c: "L", w: ["LALA", "LILI", "LULU", "LELE", "LOLO", "LARI", "LAGU", "LACI", "GULA", "BOLA"] },
+        { c: "M", w: ["MAMA", "MIMI", "MUMU", "MEME", "MOMO", "MATA", "CUMI", "LIMA", "MANA", "MAMA"] },
+        { c: "N", w: ["NANA", "NINI", "NUNU", "NENE", "NONO", "NASI", "NAGA", "MANA", "DANA", "BANI"] },
+        { c: "P", w: ["PAPA", "PIPI", "PUPU", "PEPE", "POPO", "PIPA", "PAKU", "PADI", "PUPA", "APA"] },
+        { c: "R", w: ["RARA", "RIRI", "RURU", "RERE", "RORO", "RAJA", "RODA", "ROTI", "RUPA", "CARI"] },
+        { c: "S", w: ["SASA", "SISI", "SUSU", "SESE", "SOSO", "SAPI", "SATU", "SANA", "SARI", "BISA"] },
+        { c: "T", w: ["TATA", "TITI", "TUTU", "TETE", "TOTO", "TAMU", "TOPI", "TALI", "HATI", "ROTI"] },
+        { c: "W", w: ["WAWA", "WIWI", "WUWU", "WEWE", "WOWO", "WATI", "BAWA", "SAWA", "HAWA", "WAWAY"] },
+        { c: "Y", w: ["YAYA", "YIYI", "YUYU", "YEYE", "YOYO", "YANI", "KAYA", "SAYA", "BAYA", "LAYA"] },
+        { c: "Z", w: ["ZAZA", "ZIZI", "ZUZU", "ZEZE", "ZOZO", "ZAKI", "ZERO", "ZONA", "ZANI", "ZIZI"] }
+    ];
+
+    let current = 0;
+    const notes = {};
+
+    function talk(t) {
+        window.speechSynthesis.cancel();
+        const m = new SpeechSynthesisUtterance(t.replace('-', ''));
+        m.lang = 'id-ID'; m.rate = 0.8;
+        window.speechSynthesis.speak(m);
+    }
+
+    function render() {
+        const item = curriculum[current];
+        document.getElementById('pg-info').innerText = `Halaman ${current + 1}`;
+        document.getElementById('main-char').innerText = item.c;
+        document.getElementById('pg-tag').innerText = `KEMAJUAN: ${Math.round(((current+1)/curriculum.length)*100)}%`;
+        
+        const grid = document.getElementById('word-grid');
+        grid.innerHTML = '';
+        item.w.forEach(word => {
+            const d = document.createElement('div');
+            d.className = 'word-item';
+            d.innerText = word;
+            d.onclick = () => talk(word);
+            grid.appendChild(d);
+        });
+
+        const area = document.getElementById('drill-area');
+        const banner = document.getElementById('banner');
+        area.classList.remove('animate'); banner.classList.remove('animate');
+        void area.offsetWidth; 
+        area.classList.add('animate'); banner.classList.add('animate');
+
+        document.getElementById('note-area').value = notes[current] || "";
+    }
+
+    function move(d) {
+        notes[current] = document.getElementById('note-area').value;
+        current += d;
+        if(current < 0) current = 0;
+        if(current >= curriculum.length) current = curriculum.length - 1;
+        render();
+        window.scrollTo(0,0);
+    }
+
+    document.getElementById('note-area').oninput = (e) => { notes[current] = e.target.value; };
+
+    render();
+</script>
+</body>
+</html>

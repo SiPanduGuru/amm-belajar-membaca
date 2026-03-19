@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AMM SUPER FUN</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        :root { --p: #FF4D6D; --s: #4CC9F0; --a: #FFB703; --b: #7209B7; }
+        body { 
+            margin: 0; background: #FF9EAA; font-family: 'Fredoka One', cursive;
+            display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden;
+        }
+        #game-box { 
+            width: 95vw; max-width: 400px; height: 85vh; background: white; 
+            border-radius: 40px; border: 8px solid #333; position: relative;
+            display: flex; flex-direction: column; box-shadow: 0 20px 0 #bc6c25;
+        }
+        .header { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-ui { background: var(--p); border: 4px solid #333; color: white; padding: 10px; border-radius: 15px; cursor: pointer; }
+        
+        /* Screens */
+        .screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .hidden { display: none !important; }
+
+        /* Bubbles & Buttons */
+        .bubble-btn {
+            width: 90%; padding: 25px; margin: 10px; border: 4px solid #333; border-radius: 30px;
+            font-size: 1.5rem; color: white; cursor: pointer; transition: 0.2s;
+            animation: wobble 3s infinite;
+        }
+        @keyframes wobble { 0%, 100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+        .bubble-btn:active { transform: scale(0.9) rotate(0deg); }
+
+        /* Tracing */
+        #draw-zone { position: relative; width: 280px; height: 280px; background: #F0F0F0; border: 5px dashed #333; border-radius: 30px; }
+        canvas { position: absolute; z-index: 10; touch-action: none; border-radius: 25px; }
+        .big-hint { position: absolute; width:100%; height:100%; display:flex; justify-content:center; align-items:center; font-size: 200px; color: #ddd; z-index: 1; pointer-events: none; }
+
+        /* Cards */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
+        .card { 
+            background: white; border: 5px solid #333; border-radius: 25px; 
+            font-size: 3.5rem; padding: 20px; text-align: center; cursor: pointer;
+            box-shadow: 0 8px 0 #333; color: var(--b);
+        }
+        .card:active { transform: translateY(8px); box-shadow: none; }
+
+        .emoji { font-size: 100px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div id="game-box">
+    <div class="header">
+        <button class="btn-ui" onclick="goMenu()">🏠</button>
+        <div style="font-size: 1.5rem;">⭐ <span id="s-val">0</span></div>
+    </div>
+
+    <div id="m-scr" class="screen">
+        <div class="emoji">🐣</div>
+        <h1 style="color:var(--b); margin:0">AMM KIDS</h1>
+        <button class="bubble-btn" style="background:var(--p)" onclick="play('trace')">TULIS HURUF</button>
+        <button class="bubble-btn" style="background:var(--s)" onclick="play('listen')">DENGAR HURUF</button>
+    </div>
+
+    <div id="g-scr" class="screen hidden">
+        <h2 id="task" style="color:var(--p)">Tulis A</h2>
+        
+        <div id="t-zone" class="hidden">
+            <div id="draw-zone">
+                <div class="big-hint" id="hint">A</div>
+                <canvas id="canv" width="280" height="280"></canvas>
+            </div>
+            <button class="bubble-btn" style="background:var(--a); margin-top:20px;" onclick="done()">OKE!</button>
+        </div>
+
+        <div id="l-zone" class="hidden">
+            <button onclick="talkTarget()" style="font-size:80px; background:none; border:none; cursor:pointer">📢</button>
+            <div class="grid" id="opts"></div>
+        </div>
+    </div>
+
+    <div id="w-scr" class="screen hidden">
+        <div class="emoji">🥳</div>
+        <h1>HEBAT!</h1>
+        <button class="bubble-btn" style="background:var(--green)" onclick="goMenu()">MAIN LAGI</button>
+    </div>
+</div>
+
+<script>
+    const v = ['A','I','U','E','O'], k = ['B','C','D','G','H','J','K','L','M','N','P','R','S','T'];
+    let score = 0, q = 0, mode = '', target = '';
+    const canv = document.getElementById('canv'), ctx = canv.getContext('2d');
+    let drawing = false;
+
+    function talk(t) {
+        const s = window.speechSynthesis; s.cancel();
+        const m = new SpeechSynthesisUtterance(t);
+        m.lang = 'id-ID'; m.rate = 0.7; m.pitch = 1.4;
+        s.speak(m);
+    }
+
+    function talkTarget() { talk("Ayo cari huruf " + target); }
+
+    function goMenu() {
+        hide(); document.getElementById('m-scr').classList.remove('hidden');
+        score = 0; q = 0; document.getElementById('s-val').innerText = 0;
+    }
+
+    function play(m) {
+        mode = m; hide(); document.getElementById('g-scr').classList.remove('hidden');
+        talk("Yeay! Ayo kita mulai!"); next();
+    }
+
+    function hide() { ['m-scr','g-scr','w-scr','t-zone','l-zone'].forEach(i=>document.getElementById(i).classList.add('hidden')); }
+
+    function next() {
+        if(q >= 10) { 
+            hide(); document.getElementById('w-scr').classList.remove('hidden'); 
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            talk("Luar biasa sayang! Kamu menang!"); return; 
+        }
+        target = q < 5 ? v[Math.floor(Math.random()*5)] : k[Math.floor(Math.random()*k.length)];
+        if(mode === 'trace') {
+            document.getElementById('t-zone').classList.remove('hidden');
+            document.getElementById('task').innerText = "Tulis Huruf " + target;
+            document.getElementById('hint').innerText = target;
+            ctx.clearRect(0,0,280,280); talk("Tulis " + target);
+        } else {
+            document.getElementById('l-zone').classList.remove('hidden');
+            document.getElementById('task').innerText = "Mana Huruf " + target + "?";
+            renderQuiz(); talkTarget();
+        }
+    }
+
+    // Tracing Fix
+    canv.addEventListener('pointerdown', () => { drawing = true; ctx.beginPath(); });
+    canv.addEventListener('pointermove', (e) => {
+        if(!drawing) return;
+        const r = canv.getBoundingClientRect();
+        ctx.lineWidth = 15; ctx.lineCap = 'round'; ctx.strokeStyle = '#7209B7';
+        ctx.lineTo(e.clientX - r.left, e.clientY - r.top); ctx.stroke();
+    });
+    window.addEventListener('pointerup', () => drawing = false);
+
+    function done() { score+=10; q++; document.getElementById('s-val').innerText = score; talk("Pintar!"); next(); }
+
+    function renderQuiz() {
+        const o = document.getElementById('opts'); o.innerHTML = '';
+        let choices = [target];
+        while(choices.length < 4) {
+            let r = [...v, ...k][Math.floor(Math.random()*19)];
+            if(!choices.includes(r)) choices.push(r);
+        }
+        choices.sort(()=>Math.random()-0.5).forEach(l => {
+            const c = document.createElement('div'); c.className = 'card'; c.innerText = l;
+            c.onclick = () => {
+                if(l === target) { 
+                    confetti({ particleCount: 40, spread: 50 });
+                    score+=10; q++; document.getElementById('s-val').innerText = score; 
+                    talk("Hebat! Itu " + l); next();
+                } else { talk("Coba lagi sayang"); }
+            };
+            o.appendChild(c);
+        });
+    }
+
+    goMenu();
+</script>
+</body>
+</html>

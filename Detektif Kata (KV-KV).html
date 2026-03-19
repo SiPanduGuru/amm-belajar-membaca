@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMM - Gabung Kata Ceria</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #FFF5F7; --p: #FF477E; --s: #00B4D8; --y: #FFD60A; --g: #38B000;
+        }
+        body {
+            margin: 0; font-family: 'Nunito', sans-serif; background: var(--bg);
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
+        .container { width: 95%; max-width: 500px; padding: 20px; text-align: center; }
+        
+        /* Category Selector */
+        .cat-box { display: flex; overflow-x: auto; gap: 10px; padding: 10px 0; margin-bottom: 20px; width: 100%; scrollbar-width: none; }
+        .cat-item { 
+            flex: 0 0 auto; background: white; padding: 10px 20px; border-radius: 15px; 
+            border: 3px solid #eee; cursor: pointer; font-family: 'Fredoka One'; color: #555;
+        }
+        .cat-item.active { background: var(--p); color: white; border-color: var(--p); }
+
+        /* Word Card */
+        #word-card {
+            background: white; border-radius: 40px; padding: 40px 20px;
+            box-shadow: 0 15px 0px rgba(0,0,0,0.05); border: 8px solid var(--s);
+            margin-bottom: 20px; position: relative; overflow: hidden;
+        }
+        .syllable-wrap { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
+        .syl { 
+            font-size: 4.5rem; font-family: 'Fredoka One'; color: var(--p);
+            background: #fdf0f4; padding: 10px 20px; border-radius: 20px;
+            transition: 0.3s; cursor: pointer;
+        }
+        .full-word { font-size: 2rem; color: #555; background: var(--y); padding: 5px 20px; border-radius: 50px; display: inline-block; }
+
+        /* Controls */
+        .controls { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .btn-action {
+            flex: 1; padding: 15px; border-radius: 20px; border: none; 
+            font-family: 'Fredoka One'; font-size: 1.2rem; cursor: pointer; color: white;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+        }
+        .btn-prev { background: #CCC; }
+        .btn-next { background: var(--g); }
+        .btn-play { background: var(--s); width: 70px; height: 70px; border-radius: 50%; font-size: 1.5rem; }
+
+        .instr { font-size: 0.9rem; color: #999; font-style: italic; margin-top: 10px; }
+        .anim-pop { animation: pop 0.3s ease; }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 style="font-family:'Fredoka One'; color:var(--p); margin: 20px 0 5px 0;">Detektif Kata 🔍</h1>
+    <p style="margin-bottom: 20px; font-weight: bold;">Langsung baca, jangan dieja ya!</p>
+
+    <div class="cat-box" id="cat-list">
+        </div>
+
+    <div id="word-card">
+        <div class="syllable-wrap" id="display-syllables">
+            </div>
+        <div class="full-word" id="display-full">...</div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-action btn-prev" onclick="changeWord(-1)">KIRI</button>
+        <button class="btn-action btn-play" onclick="speakFull()">🔊</button>
+        <button class="btn-action btn-next" onclick="changeWord(1)">KANAN</button>
+    </div>
+
+    <p class="instr">Klik tiap kotak untuk dengar suaranya!</p>
+</div>
+
+<script>
+    const dictionary = {
+        "B-C": [
+            {syl: ["bu","ku"], full: "Buku"}, {syl: ["bo","la"], full: "Bola"},
+            {syl: ["ba","ju"], full: "Baju"}, {syl: ["ba","tu"], full: "Batu"},
+            {syl: ["bu","si"], full: "Busi"}, {syl: ["ba","bi"], full: "Babi"},
+            {syl: ["cu","ka"], full: "Cuka"}, {syl: ["cu","mi"], full: "Cumi"},
+            {syl: ["ca","be"], full: "Cabe"}, {syl: ["cu","ci"], full: "Cuci"}
+        ],
+        "D-G": [
+            {syl: ["da","du"], full: "Dadu"}, {syl: ["da","hi"], full: "Dahi"},
+            {syl: ["da","gu"], full: "Dagu"}, {syl: ["ga","da"], full: "Gada"},
+            {syl: ["ga","ji"], full: "Gaji"}, {syl: ["gu","si"], full: "Gusi"}
+        ],
+        "H-J": [
+            {syl: ["ha","ji"], full: "Haji"}, {syl: ["ha","ri"], full: "Hari"},
+            {syl: ["ha","ti"], full: "Hati"}, {syl: ["ja","ga"], full: "Jaga"},
+            {syl: ["ja","ri"], full: "Jari"}, {syl: ["je","da"], full: "Jeda"}
+        ],
+        "K-L": [
+            {syl: ["ka","ki"], full: "Kaki"}, {syl: ["ka","ku"], full: "Kaku"},
+            {syl: ["ka","yu"], full: "Kayu"}, {syl: ["ko","ki"], full: "Koki"},
+            {syl: ["la","ba"], full: "Laba"}, {syl: ["la","bu"], full: "Labu"}
+        ],
+        "M-N": [
+            {syl: ["ma","ma"], full: "Mama"}, {syl: ["ma","ta"], full: "Mata"},
+            {syl: ["me","ja"], full: "Meja"}, {syl: ["mu","ka"], full: "Muka"},
+            {syl: ["na","ga"], full: "Naga"}, {syl: ["na","si"], full: "Nasi"}
+        ],
+        "P-S": [
+            {syl: ["pa","pa"], full: "Papa"}, {syl: ["pa","ku"], full: "Paku"},
+            {syl: ["pi","pa"], full: "Pipa"}, {syl: ["ro","da"], full: "Roda"},
+            {syl: ["ro","ti"], full: "Roti"}, {syl: ["sa","pi"], full: "Sapi"}
+        ],
+        "T-W": [
+            {syl: ["ta","mu"], full: "Tamu"}, {syl: ["to","pi"], full: "Topi"},
+            {syl: ["tu","gu"], full: "Tugu"}, {syl: ["sa","tu"], full: "Satu"}
+        ]
+    };
+
+    let currentCat = "B-C";
+    let currentIndex = 0;
+
+    // Build Category Tabs
+    const catList = document.getElementById('cat-list');
+    Object.keys(dictionary).forEach(key => {
+        const btn = document.createElement('div');
+        btn.className = `cat-item ${key === currentCat ? 'active' : ''}`;
+        btn.innerText = key;
+        btn.onclick = () => {
+            currentCat = key;
+            currentIndex = 0;
+            updateTabs();
+            updateCard();
+        };
+        catList.appendChild(btn);
+    });
+
+    function updateTabs() {
+        document.querySelectorAll('.cat-item').forEach(el => {
+            el.classList.toggle('active', el.innerText === currentCat);
+        });
+    }
+
+    function updateCard() {
+        const item = dictionary[currentCat][currentIndex];
+        const wrap = document.getElementById('display-syllables');
+        wrap.innerHTML = '';
+        
+        item.syl.forEach(s => {
+            const div = document.createElement('div');
+            div.className = 'syl';
+            div.innerText = s;
+            div.onclick = () => speak(s, div);
+            wrap.appendChild(div);
+        });
+
+        document.getElementById('display-full').innerText = item.full;
+        // Animasi muncul
+        document.getElementById('word-card').classList.add('anim-pop');
+        setTimeout(()=> document.getElementById('word-card').classList.remove('anim-pop'), 300);
+    }
+
+    function changeWord(dir) {
+        currentIndex += dir;
+        if(currentIndex < 0) currentIndex = dictionary[currentCat].length - 1;
+        if(currentIndex >= dictionary[currentCat].length) currentIndex = 0;
+        updateCard();
+    }
+
+    function speak(txt, el) {
+        window.speechSynthesis.cancel();
+        const ut = new SpeechSynthesisUtterance(txt);
+        ut.lang = 'id-ID'; ut.rate = 0.8; ut.pitch = 1.2;
+        window.speechSynthesis.speak(ut);
+        if(el) {
+            el.classList.add('anim-pop');
+            setTimeout(()=> el.classList.remove('anim-pop'), 300);
+        }
+    }
+
+    function speakFull() {
+        const item = dictionary[currentCat][currentIndex];
+        // Teknik: Suku-satu jeda suku-dua lalu full
+        speak(`${item.syl[0]} ... ${item.syl[1]} ... ${item.full}`);
+    }
+
+    // Init
+    updateCard();
+</script>
+
+</body>
+</html>

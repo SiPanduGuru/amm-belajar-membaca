@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMM Drill Kombinasi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { --p: #FF477E; --s: #4CC9F0; --bg: #F0F2F5; }
+        body { margin: 0; font-family: 'Quicksand', sans-serif; background: var(--bg); display: flex; justify-content: center; }
+        
+        .app { width: 100%; max-width: 500px; background: white; min-height: 100vh; display: flex; flex-direction: column; border: 4px solid #333; }
+        
+        .header { background: var(--p); color: white; padding: 20px; text-align: center; border-bottom: 4px solid #333; }
+        .header h1 { margin: 0; font-family: 'Fredoka One'; font-size: 1.8rem; }
+        .header p { margin: 5px 0 0; font-weight: bold; opacity: 0.9; }
+
+        .content { flex: 1; padding: 20px; }
+        
+        /* Baris Kombinasi */
+        .drill-row { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; 
+            margin-bottom: 25px; padding: 15px; background: #fdfdfd; 
+            border: 2px dashed #ccc; border-radius: 15px;
+        }
+
+        .pair { 
+            display: flex; gap: 10px; justify-content: center; 
+            font-family: 'Fredoka One'; font-size: 2.5rem; color: #333;
+        }
+
+        .syllable { 
+            cursor: pointer; padding: 5px 10px; border-radius: 10px;
+            transition: 0.1s; border: 2px solid transparent;
+        }
+        .syllable:active { background: var(--s); color: white; transform: scale(1.1); }
+
+        .teacher-note { 
+            margin: 20px; padding: 15px; background: #FFF9C4; 
+            border: 2px solid #FBC02D; border-radius: 15px; 
+        }
+        textarea { 
+            width: 100%; border: none; background: transparent; 
+            font-family: inherit; font-size: 1rem; outline: none; resize: none; 
+        }
+
+        .footer { 
+            padding: 20px; display: flex; justify-content: space-between; 
+            background: #eee; border-top: 4px solid #333; gap: 10px;
+        }
+        .btn { 
+            flex: 1; padding: 15px; border-radius: 12px; border: 3px solid #333; 
+            font-family: 'Fredoka One'; cursor: pointer; box-shadow: 0 5px 0 #333; 
+            font-size: 1rem;
+        }
+        .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 #333; }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <div class="header">
+        <h1 id="alpha-focus">HURUF B</h1>
+        <p>Ayo baca pelan-pelan!</p>
+    </div>
+
+    <div class="content" id="drill-area">
+        </div>
+
+    <div class="teacher-note">
+        <b style="font-size: 0.8rem; color: #827717;">Catatan Guru:</b>
+        <textarea id="note-text" rows="2" placeholder="Anak bingung di ba - bu..."></textarea>
+    </div>
+
+    <div class="footer">
+        <button class="btn" style="background:#ccc" onclick="move(-1)">KIRI</button>
+        <button class="btn" style="background:#06D6A0; color:white" onclick="move(1)">KANAN</button>
+    </div>
+</div>
+
+<script>
+    const alphabet = "BCDFGHJKLMNPQRSTVWXYZ".split("");
+    let currentIdx = 0;
+    let savedNotes = {};
+
+    function talk(t) {
+        window.speechSynthesis.cancel();
+        const m = new SpeechSynthesisUtterance(t);
+        m.lang = 'id-ID'; m.rate = 0.7;
+        window.speechSynthesis.speak(m);
+    }
+
+    function render() {
+        const char = alphabet[currentIdx].toLowerCase();
+        document.getElementById('alpha-focus').innerText = `HURUF ${char.toUpperCase()}`;
+        
+        const area = document.getElementById('drill-area');
+        area.innerHTML = '';
+
+        // Pola Kombinasi Acak (sesuai permintaanmu)
+        const patterns = [
+            [char+'a', char+'a'], [char+'u', char+'a'],
+            [char+'a', char+'i'], [char+'e', char+'i'],
+            [char+'e', char+'a'], [char+'u', char+'e'],
+            [char+'o', char+'i'], [char+'u', char+'o']
+        ];
+
+        patterns.forEach(pair => {
+            const row = document.createElement('div');
+            row.className = 'drill-row';
+            
+            let rowHtml = '<div class="pair">';
+            pair.forEach(syl => {
+                rowHtml += `<span class="syllable" onclick="talk('${syl}')">${syl}</span>`;
+            });
+            rowHtml += '</div>';
+
+            // Duplikasi pasangan kedua agar penuh gridnya
+            rowHtml += `<div class="pair">
+                <span class="syllable" onclick="talk('${pair[1]}')">${pair[1]}</span>
+                <span class="syllable" onclick="talk('${pair[0]}')">${pair[0]}</span>
+            </div>`;
+
+            row.innerHTML = rowHtml;
+            area.appendChild(row);
+        });
+
+        document.getElementById('note-text').value = savedNotes[currentIdx] || "";
+    }
+
+    function move(d) {
+        savedNotes[currentIdx] = document.getElementById('note-text').value;
+        currentIdx += d;
+        if(currentIdx < 0) currentIdx = 0;
+        if(currentIdx >= alphabet.length) currentIdx = alphabet.length - 1;
+        render();
+    }
+
+    document.getElementById('note-text').oninput = (e) => {
+        savedNotes[currentIdx] = e.target.value;
+    };
+
+    render();
+</script>
+</body>
+</html>

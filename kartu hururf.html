@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMM Flashcards - Belajar Huruf</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --vokal: #FF4D6D; /* Merah */
+            --konsonan: #4361EE; /* Biru */
+            --bg: #F8F9FA;
+        }
+
+        body {
+            margin: 0; font-family: 'Nunito', sans-serif;
+            background-color: var(--bg);
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding: 20px;
+        }
+
+        .header { text-align: center; margin-bottom: 20px; }
+        h1 { font-family: 'Fredoka One'; color: #333; margin: 0; font-size: 2rem; }
+        p { color: #666; margin: 5px 0; }
+
+        /* Filter Tab */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn {
+            padding: 10px 20px; border: none; border-radius: 15px;
+            font-family: 'Fredoka One'; cursor: pointer; background: #ddd; transition: 0.3s;
+        }
+        .tab-btn.active { background: var(--vokal); color: white; }
+        .tab-btn.k-active { background: var(--konsonan); color: white; }
+
+        /* Card Layout */
+        #card-container {
+            width: 100%; max-width: 500px;
+            perspective: 1000px;
+        }
+
+        .card {
+            background: white; border-radius: 40px; padding: 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 8px solid #eee; text-align: center;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card:active { transform: scale(0.95); }
+
+        .letter-display {
+            font-family: 'Fredoka One'; font-size: 8rem; line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .word-display {
+            font-size: 2.5rem; color: #333; margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .image-emoji { font-size: 6rem; margin: 20px 0; }
+
+        /* Navigation */
+        .nav-controls {
+            display: flex; gap: 20px; margin-top: 30px; align-items: center;
+        }
+
+        .nav-btn {
+            background: #333; color: white; border: none;
+            width: 60px; height: 60px; border-radius: 50%;
+            font-size: 1.5rem; cursor: pointer; display: flex;
+            justify-content: center; align-items: center;
+        }
+
+        .play-btn {
+            background: #2ed573; width: 80px; height: 80px; font-size: 2.5rem;
+            box-shadow: 0 8px 0 #26af5f;
+        }
+        
+        .play-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        /* Colors for types */
+        .color-v { color: var(--vokal); border-color: var(--vokal); }
+        .color-k { color: var(--konsonan); border-color: var(--konsonan); }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>KARTU HURUF PINTAR</h1>
+    <p>Klik tombol hijau untuk mendengar suara</p>
+</div>
+
+<div class="tabs">
+    <button id="btn-vokal" class="tab-btn active" onclick="filter('vokal')">VOKAL (A-I-U-E-O)</button>
+    <button id="btn-konsonan" class="tab-btn" onclick="filter('konsonan')">KONSONAN</button>
+</div>
+
+<div id="card-container">
+    <div id="flashcard" class="card color-v">
+        <div id="l-main" class="letter-display">Aa</div>
+        <div id="emoji" class="image-emoji">🍎</div>
+        <div id="word" class="word-display">AYAM</div>
+    </div>
+</div>
+
+<div class="nav-controls">
+    <button class="nav-btn" onclick="prevCard()">◀</button>
+    <button class="nav-btn play-btn" onclick="speakCurrent()">🔊</button>
+    <button class="nav-btn" onclick="nextCard()">▶</button>
+</div>
+
+<script>
+    const data = {
+        vokal: [
+            { l: "Aa", w: "AYAM", e: "🐔" },
+            { l: "Ii", w: "IKAN", e: "🐟" },
+            { l: "Uu", w: "ULAR", e: "🐍" },
+            { l: "Ee", w: "EMBER", e: "🪣" },
+            { l: "Oo", w: "OBAT", e: "💊" }
+        ],
+        konsonan: [
+            { l: "Bb", w: "BOLA", e: "⚽" },
+            { l: "Cc", w: "CABE", e: "🌶️" },
+            { l: "Dd", w: "DADU", e: "🎲" },
+            { l: "Gg", w: "GAJAH", e: "🐘" },
+            { l: "Hh", w: "HUJAN", e: "🌧️" },
+            { l: "Jj", w: "JERUK", e: "🍊" },
+            { l: "Kk", w: "KAKI", e: "🦶" },
+            { l: "Ll", w: "LAMPU", e: "💡" },
+            { l: "Mm", w: "MATA", e: "👁️" },
+            { l: "Nn", w: "NASI", e: "🍚" },
+            { l: "Pp", w: "PINTU", e: "🚪" },
+            { l: "Rr", w: "RODA", e: "🛞" },
+            { l: "Ss", w: "SAPI", e: "🐄" },
+            { l: "Tt", w: "TOPI", e: "🎩" }
+        ]
+    };
+
+    let currentGroup = 'vokal';
+    let currentIndex = 0;
+
+    function filter(group) {
+        currentGroup = group;
+        currentIndex = 0;
+        
+        // Update tab UI
+        document.getElementById('btn-vokal').classList.toggle('active', group === 'vokal');
+        document.getElementById('btn-konsonan').classList.toggle('k-active', group === 'konsonan');
+        
+        updateCard();
+    }
+
+    function updateCard() {
+        const item = data[currentGroup][currentIndex];
+        const card = document.getElementById('flashcard');
+        
+        // Update Content
+        document.getElementById('l-main').innerText = item.l;
+        document.getElementById('emoji').innerText = item.e;
+        document.getElementById('word').innerText = item.w;
+        
+        // Update Color Theme
+        card.className = 'card ' + (currentGroup === 'vokal' ? 'color-v' : 'color-k');
+        
+        // Auto Speak
+        speakCurrent();
+    }
+
+    function nextCard() {
+        currentIndex = (currentIndex + 1) % data[currentGroup].length;
+        updateCard();
+    }
+
+    function prevCard() {
+        currentIndex = (currentIndex - 1 + data[currentGroup].length) % data[currentGroup].length;
+        updateCard();
+    }
+
+    function speakCurrent() {
+        window.speechSynthesis.cancel();
+        const item = data[currentGroup][currentIndex];
+        
+        // Teknik Artikulasi Miss Rachel: Sebut Huruf -> Bunyi Huruf -> Kata
+        const letter = item.l[0]; // Ambil huruf depan saja (A)
+        const ut = new SpeechSynthesisUtterance();
+        ut.lang = 'id-ID';
+        ut.rate = 0.6; // Pelan supaya anak bisa ikut
+        ut.pitch = 1.2;
+        
+        // Narasi: "A... A... Ayam"
+        ut.text = `${letter}....... ${letter}....... ${item.w}`;
+        
+        window.speechSynthesis.speak(ut);
+    }
+
+    // Initialize
+    updateCard();
+</script>
+
+</body>
+</html>

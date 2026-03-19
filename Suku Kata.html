@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hutan Suku Kata Pelangi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #E0F7FA;
+            /* Warna Pelangi untuk Baris */
+            --r1: #FF595E; --r2: #FF924C; --r3: #FFCA3A; 
+            --r4: #8AC926; --r5: #1982C4; --r6: #6A4C93;
+        }
+
+        body {
+            margin: 0; font-family: 'Fredoka One', cursive;
+            background: var(--bg); display: flex; flex-direction: column; align-items: center;
+            padding: 20px;
+        }
+
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { font-size: 2.5rem; color: #333; text-shadow: 2px 2px white; margin: 0; }
+        .header p { background: white; padding: 5px 15px; border-radius: 20px; display: inline-block; }
+
+        /* Container Tabel yang Fun */
+        .grid-container {
+            display: grid; grid-template-columns: 60px repeat(5, 1fr);
+            gap: 10px; max-width: 600px; width: 100%;
+            background: rgba(255,255,255,0.5); padding: 15px; border-radius: 30px;
+        }
+
+        /* Label Atas (Vokal) */
+        .v-header {
+            background: white; border-radius: 15px; padding: 10px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem; color: #555; border: 3px solid #ddd;
+        }
+
+        /* Tombol Suku Kata */
+        .syllable-btn {
+            aspect-ratio: 1/1; border: none; border-radius: 18px;
+            font-size: 1.8rem; font-family: 'Fredoka One'; color: white;
+            cursor: pointer; display: flex; justify-content: center; align-items: center;
+            transition: 0.2s; box-shadow: 0 6px 0 rgba(0,0,0,0.1);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .syllable-btn:hover { transform: scale(1.1) rotate(3deg); }
+        .syllable-btn:active { transform: translateY(4px); box-shadow: none; }
+
+        /* Row Colors (Berulang) */
+        .row-0 { background: var(--r1); } .row-1 { background: var(--r2); }
+        .row-2 { background: var(--r3); } .row-3 { background: var(--r4); }
+        .row-4 { background: var(--r5); } .row-5 { background: var(--r6); }
+
+        /* Konsonan Label */
+        .k-label {
+            background: #333; color: white; border-radius: 50%;
+            width: 50px; height: 50px; display: flex; justify-content: center;
+            align-items: center; font-size: 1.8rem; align-self: center;
+        }
+
+        /* Pop Animation */
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); z-index: 100; }
+            100% { transform: scale(1); }
+        }
+        .anim-pop { animation: pop 0.4s ease; }
+
+        /* Section Randomized */
+        .turbo-box {
+            margin-top: 30px; width: 100%; max-width: 600px;
+            background: white; border-radius: 30px; padding: 20px;
+            border: 6px solid var(--r2); text-align: center;
+        }
+        .bubble-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 20px 0; }
+        .bubble {
+            background: var(--r5); color: white; padding: 15px 25px;
+            border-radius: 50px; font-size: 2rem; cursor: pointer;
+            box-shadow: 0 5px 0 #0d5a8c;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Petualangan Ba-Bi-Bu 🌈</h1>
+    <p>Klik kotak warna untuk dengar bunyi!</p>
+</div>
+
+<div class="grid-container" id="main-grid">
+    <div></div> <div class="v-header">a</div>
+    <div class="v-header">i</div>
+    <div class="v-header">u</div>
+    <div class="v-header">e</div>
+    <div class="v-header">o</div>
+    
+    </div>
+
+<div class="turbo-box">
+    <h2 style="color: var(--r2)">⚡ TANTANGAN KILAT ⚡</h2>
+    <div class="bubble-wrap" id="turbo-wrap">
+        </div>
+    <button onclick="genTurbo()" style="padding: 15px 30px; font-family:'Fredoka One'; border-radius: 20px; background:var(--r4); border:none; color:white; font-size:1.2rem; cursor:pointer;">ACAK LAGI!</button>
+</div>
+
+<script>
+    const kons = ['B','C','D','G','H','J','K','L','M','N','P','R','S','T'];
+    const voks = ['a','i','u','e','o'];
+    const colors = ['row-0','row-1','row-2','row-3','row-4','row-5'];
+
+    const grid = document.getElementById('main-grid');
+    
+    // 1. Build The Rainbow Table
+    kons.forEach((k, idx) => {
+        // Label Konsonan
+        const label = document.createElement('div');
+        label.className = 'k-label';
+        label.innerText = k;
+        grid.appendChild(label);
+
+        // Buttons
+        voks.forEach(v => {
+            const btn = document.createElement('button');
+            const teks = (k + v).toLowerCase();
+            btn.className = `syllable-btn ${colors[idx % colors.length]}`;
+            btn.innerText = teks;
+            btn.onclick = () => playSyllable(teks, btn);
+            grid.appendChild(btn);
+        });
+    });
+
+    // 2. Audio Engine
+    function playSyllable(teks, el) {
+        // Suara
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(teks);
+        msg.lang = 'id-ID'; msg.rate = 0.8; msg.pitch = 1.2;
+        window.speechSynthesis.speak(msg);
+
+        // Animasi Meloncat
+        el.classList.add('anim-pop');
+        setTimeout(() => el.classList.remove('anim-pop'), 400);
+    }
+
+    // 3. Turbo Mode Generator
+    function genTurbo() {
+        const wrap = document.getElementById('turbo-wrap');
+        wrap.innerHTML = '';
+        for(let i=0; i<8; i++) {
+            const rK = kons[Math.floor(Math.random()*kons.length)];
+            const rV = voks[Math.floor(Math.random()*voks.length)];
+            const teks = (rK + rV).toLowerCase();
+            
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            b.innerText = teks;
+            b.style.backgroundColor = `hsl(${Math.random()*360}, 70%, 50%)`;
+            b.onclick = () => playSyllable(teks, b);
+            wrap.appendChild(b);
+        }
+        // Suara Semangat
+        const startMsg = new SpeechSynthesisUtterance("Ayo baca cepat!");
+        startMsg.lang = 'id-ID';
+        window.speechSynthesis.speak(startMsg);
+    }
+
+    genTurbo();
+</script>
+
+</body>
+</html>

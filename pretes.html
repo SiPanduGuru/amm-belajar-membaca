@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>AMM - Diagnostik Level Literasi</title>
+    <style>
+        :root { --p: #4F46E5; --s: #EF4444; --bg: #F8FAFC; --card: #FFFFFF; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
+        #app { max-width: 500px; width: 100%; background: var(--card); border-radius: 24px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 2px solid #E2E8F0; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .btn-audio { background: #10B981; color: white; border: none; padding: 15px; border-radius: 50%; cursor: pointer; font-size: 24px; margin: 10px; width: 60px; height: 60px; transition: 0.3s; }
+        .btn-audio:hover { transform: scale(1.1); background: #059669; }
+        .options { display: grid; gap: 12px; margin-top: 20px; }
+        .opt { background: white; border: 2px solid #E2E8F0; padding: 15px; border-radius: 12px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.2s; text-align: center; }
+        .opt:hover { border-color: var(--p); background: #EEF2FF; }
+        .progress { height: 8px; background: #E2E8F0; border-radius: 4px; margin-bottom: 20px; }
+        #bar { height: 100%; background: var(--p); width: 0%; transition: 0.5s; border-radius: 4px; }
+        .hidden { display: none; }
+        .result-card { background: #F1F5F9; padding: 20px; border-radius: 16px; margin-top: 20px; border-left: 5px solid var(--p); }
+        .label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #64748B; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="screen-start" class="header">
+        <h1 style="color: var(--p)">Asesmen AMM</h1>
+        <p>Ayo dengarkan suara dan pilih kata yang tepat!</p>
+        <button class="opt" style="width:100%; background: var(--p); color:white" onclick="startTest()">MULAI DIAGNOSTIK</button>
+    </div>
+
+    <div id="screen-test" class="hidden">
+        <div class="progress"><div id="bar"></div></div>
+        <div class="header">
+            <div class="label" id="step-label">Misi 1: Dasar</div>
+            <p>Klik tombol hijau untuk dengar suara:</p>
+            <button class="btn-audio" onclick="playAudio()">🔊</button>
+        </div>
+        <div class="options" id="options"></div>
+    </div>
+
+    <div id="screen-result" class="hidden">
+        <div class="header">
+            <h2 style="color: #10B981">Hasil Diagnostik</h2>
+            <p>Berdasarkan kemampuanmu, ini unit yang cocok:</p>
+        </div>
+        <div class="result-card">
+            <div class="label">Rekomendasi:</div>
+            <h3 id="res-unit" style="margin: 5px 0; color: var(--p)">UNIT 1</h3>
+            <p id="res-desc" style="font-size: 0.95rem; color: #475569"></p>
+        </div>
+        <button class="opt" style="width:100%; margin-top:20px" onclick="location.reload()">RE-DIAGNOSTIK</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { audio: "baca", opts: ["baca", "buku", "kaca"], level: 1, type: "V-KV" },
+        { audio: "meja", opts: ["meja", "mana", "mati"], level: 1, type: "V-KV" },
+        { audio: "makan", opts: ["maka", "makan", "mana"], level: 2, type: "KVK" },
+        { audio: "kertas", opts: ["keras", "keris", "kertas"], level: 2, type: "KVK" },
+        { audio: "nyanyi", opts: ["nani", "nyanyi", "yanyi"], level: 3, type: "GANDA" },
+        { audio: "pantai", opts: ["panti", "panta", "pantai"], level: 3, type: "DIFTONG" }
+    ];
+
+    let current = 0;
+    let scores = { 1: 0, 2: 0, 3: 0 };
+
+    function startTest() {
+        document.getElementById('screen-start').classList.add('hidden');
+        document.getElementById('screen-test').classList.remove('hidden');
+        loadQuestion();
+    }
+
+    function playAudio() {
+        const msg = new SpeechSynthesisUtterance();
+        msg.text = questions[current].audio;
+        msg.lang = 'id-ID';
+        msg.rate = 0.8; // Sedikit lebih lambat agar jelas
+        window.speechSynthesis.speak(msg);
+    }
+
+    function loadQuestion() {
+        const q = questions[current];
+        document.getElementById('bar').style.width = (current / questions.length * 100) + "%";
+        document.getElementById('step-label').innerText = `Misi ${current + 1}: Analisis ${q.type}`;
+        
+        const optCont = document.getElementById('options');
+        optCont.innerHTML = '';
+        
+        // Shuffle options
+        const shuffled = [...q.opts].sort(() => Math.random() - 0.5);
+        
+        shuffled.forEach(text => {
+            const b = document.createElement('div');
+            b.className = 'opt';
+            b.innerText = text;
+            b.onclick = () => next(text === q.audio);
+            optCont.appendChild(b);
+        });
+    }
+
+    function next(isCorrect) {
+        if(isCorrect) {
+            scores[questions[current].level]++;
+        } else {
+            // Logic Profesional: Jika Level 1 saja salah, langsung stop ke Unit 1
+            if(questions[current].level === 1) return showResult(true);
+        }
+
+        current++;
+        if(current < questions.length) {
+            loadQuestion();
+        } else {
+            showResult(false);
+        }
+    }
+
+    function showResult(failEarly) {
+        document.getElementById('screen-test').classList.add('hidden');
+        document.getElementById('screen-result').classList.remove('hidden');
+
+        let unit = "";
+        let desc = "";
+
+        if(failEarly || scores[1] < 2) {
+            unit = "UNIT 1: FONDASI SUKU KATA";
+            desc = "Anak belum menguasai pola dasar V-KV (Vokal-Konsonan Vokal). Mulailah dengan drill fonem dan suku kata terbuka tanpa huruf mati.";
+        } else if(scores[2] < 2) {
+            unit = "UNIT 2: PENAKLUKAN KONSONAN MATI";
+            desc = "Anak lancar di kata dasar, tapi kesulitan pada akhiran huruf mati (KVK). Fokus pada Unit 2 Bagian A (Sengau) dan B (Letup).";
+        } else if(scores[3] < 2) {
+            unit = "UNIT 3: HURUF GANDA & DIFTONG";
+            desc = "Anak sudah bisa membaca kata umum, namun bingung pada kombinasi NY, NG, KH atau vokal rangkap (AI, AU).";
+        } else {
+            unit = "UNIT 4: PEMAHAMAN TEMATIK";
+            desc = "Luar biasa! Literasi teknis anak sudah matang. Saatnya masuk ke transisi 'Reading to Learn' dengan teks narasi pendek.";
+        }
+
+        document.getElementById('res-unit').innerText = unit;
+        document.getElementById('res-desc').innerText = desc;
+    }
+</script>
+
+</body>
+</html>
