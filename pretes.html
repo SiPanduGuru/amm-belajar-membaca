@@ -2,145 +2,192 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>AMM - Diagnostik Level Literasi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🕵️ AMM - Tebak Kata Misteri</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --p: #4F46E5; --s: #EF4444; --bg: #F8FAFC; --card: #FFFFFF; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 20px; }
-        #app { max-width: 500px; width: 100%; background: var(--card); border-radius: 24px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 2px solid #E2E8F0; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .btn-audio { background: #10B981; color: white; border: none; padding: 15px; border-radius: 50%; cursor: pointer; font-size: 24px; margin: 10px; width: 60px; height: 60px; transition: 0.3s; }
-        .btn-audio:hover { transform: scale(1.1); background: #059669; }
-        .options { display: grid; gap: 12px; margin-top: 20px; }
-        .opt { background: white; border: 2px solid #E2E8F0; padding: 15px; border-radius: 12px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.2s; text-align: center; }
-        .opt:hover { border-color: var(--p); background: #EEF2FF; }
-        .progress { height: 8px; background: #E2E8F0; border-radius: 4px; margin-bottom: 20px; }
-        #bar { height: 100%; background: var(--p); width: 0%; transition: 0.5s; border-radius: 4px; }
-        .hidden { display: none; }
-        .result-card { background: #F1F5F9; padding: 20px; border-radius: 16px; margin-top: 20px; border-left: 5px solid var(--p); }
-        .label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #64748B; font-weight: bold; }
+        :root {
+            --primary: #6C5CE7; --success: #00B894; --error: #D63031; --warning: #FDCB6E;
+            --bg: #F0F4FF; --dark: #2D3436; --white: #FFFFFF;
+            --grad-p: linear-gradient(135deg, #6C5CE7, #A29BFE);
+            --grad-s: linear-gradient(135deg, #00B894, #55E6C1);
+        }
+        
+        * { box-sizing: border-box; }
+        body { 
+            margin: 0; font-family: 'Quicksand', sans-serif; background: var(--bg); 
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            padding: 15px; overflow-x: hidden;
+        }
+
+        #app { 
+            max-width: 480px; width: 100%; background: var(--white); border-radius: 40px; 
+            padding: 25px; border: 8px solid var(--dark); box-shadow: 15px 15px 0 rgba(0,0,0,0.15);
+            text-align: center; position: relative;
+        }
+        
+        /* Navigasi Atas */
+        .nav-top { position: absolute; top: -20px; left: 20px; right: 20px; display: flex; justify-content: space-between; gap: 10px; z-index: 5; }
+        .btn-nav { 
+            background: var(--grad-p); color: var(--white); border: 3px solid var(--dark); 
+            padding: 8px 18px; border-radius: 20px; cursor: pointer; font-family: 'Fredoka One'; font-size: 0.9rem;
+            text-decoration: none; box-shadow: 0 4px 0 var(--dark); transition: 0.1s;
+        }
+        .btn-nav:active { transform: translateY(3px); box-shadow: none; }
+
+        h1 { font-family: 'Fredoka One'; color: var(--dark); font-size: 2.2rem; margin: 30px 0 10px; }
+
+        /* Area Emoji Soal */
+        .q-area { 
+            background: #f1f2f6; border: 4px dashed #b2bec3; border-radius: 25px; 
+            padding: 20px; margin-bottom: 20px; min-height: 180px; 
+            display: flex; justify-content: center; align-items: center; font-size: 6rem;
+        }
+
+        /* Pilihan Jawaban */
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .opt-btn { 
+            background: var(--white); border: 4px solid var(--dark); padding: 18px; 
+            border-radius: 20px; font-family: 'Fredoka One'; font-size: 1.4rem; color: var(--dark);
+            cursor: pointer; transition: 0.2s; box-shadow: 0 6px 0 var(--dark);
+            position: relative;
+        }
+        .opt-btn:active { transform: translateY(3px); box-shadow: none; }
+
+        /* Feedback */
+        .feedback-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 15px; display: flex; justify-content: center; align-items: center; font-size: 3rem; opacity: 0; pointer-events: none; transition: 0.2s; }
+        .correct { background: #CCFBF1 !important; border-color: var(--success) !important; color: var(--success) !important; }
+        .wrong { background: #FEE2E2 !important; border-color: var(--error) !important; color: var(--error) !important; animation: shake 0.4s; }
+        .correct .feedback-overlay, .wrong .feedback-overlay { opacity: 1; }
+
+        /* Hasil Akhir */
+        .result-card { text-align: left; background: #f8f9fa; border-radius: 20px; padding: 20px; border: 3px solid #EEE; margin: 20px 0; }
+        .res-title { font-family: 'Fredoka One'; color: var(--primary); font-size: 1.6rem; text-align: center; margin-bottom: 10px; }
+        
+        .final-btn { 
+            display: block; background: var(--grad-p); color: white; text-decoration: none;
+            padding: 18px; border-radius: 25px; font-family: 'Fredoka One'; font-size: 1.2rem;
+            margin-top: 20px; border-bottom: 8px solid #4a3ec2;
+        }
+
+        .prog-container { width: 100%; height: 12px; background: #E2E8F0; border-radius: 10px; margin-bottom: 25px; border: 2px solid var(--dark); overflow: hidden; }
+        .prog-fill { height: 100%; background: var(--grad-s); transition: 0.3s; width: 0%; }
+
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div id="screen-start" class="header">
-        <h1 style="color: var(--p)">Asesmen AMM</h1>
-        <p>Ayo dengarkan suara dan pilih kata yang tepat!</p>
-        <button class="opt" style="width:100%; background: var(--p); color:white" onclick="startTest()">MULAI DIAGNOSTIK</button>
+    <div class="nav-top">
+        <a href="index.html" class="btn-nav">🏠 HOME</a>
     </div>
 
-    <div id="screen-test" class="hidden">
-        <div class="progress"><div id="bar"></div></div>
-        <div class="header">
-            <div class="label" id="step-label">Misi 1: Dasar</div>
-            <p>Klik tombol hijau untuk dengar suara:</p>
-            <button class="btn-audio" onclick="playAudio()">🔊</button>
-        </div>
+    <div id="scr-start">
+        <h1>🕵️ TEBAK KATA</h1>
+        <p style="font-weight: bold; color: #636e72;">Lihat gambarnya, lalu pilih tulisan yang benar ya!</p>
+        <button class="final-btn" onclick="startTest()">MULAI MISI</button>
+    </div>
+
+    <div id="scr-test" class="hidden">
+        <div class="prog-container"><div id="progress" class="prog-fill"></div></div>
+        <div class="q-area" id="qEmoji">❓</div>
+        <p style="font-weight: bold; color: #666; margin-bottom: 15px;">Ini gambar apa ya?</p>
         <div class="options" id="options"></div>
     </div>
 
-    <div id="screen-result" class="hidden">
-        <div class="header">
-            <h2 style="color: #10B981">Hasil Diagnostik</h2>
-            <p>Berdasarkan kemampuanmu, ini unit yang cocok:</p>
-        </div>
+    <div id="scr-result" class="hidden">
+        <h1>🎉 MISI SELESAI</h1>
         <div class="result-card">
-            <div class="label">Rekomendasi:</div>
-            <h3 id="res-unit" style="margin: 5px 0; color: var(--p)">UNIT 1</h3>
-            <p id="res-desc" style="font-size: 0.95rem; color: #475569"></p>
+            <div class="res-title" id="res-unit">LEVEL</div>
+            <div id="res-desc" style="line-height: 1.5; color: #444;"></div>
         </div>
-        <button class="opt" style="width:100%; margin-top:20px" onclick="location.reload()">RE-DIAGNOSTIK</button>
+        <a href="index.html" class="final-btn">MAIN LAGI DI HOME</a>
     </div>
 </div>
 
 <script>
     const questions = [
-        { audio: "baca", opts: ["baca", "buku", "kaca"], level: 1, type: "V-KV" },
-        { audio: "meja", opts: ["meja", "mana", "mati"], level: 1, type: "V-KV" },
-        { audio: "makan", opts: ["maka", "makan", "mana"], level: 2, type: "KVK" },
-        { audio: "kertas", opts: ["keras", "keris", "kertas"], level: 2, type: "KVK" },
-        { audio: "nyanyi", opts: ["nani", "nyanyi", "yanyi"], level: 3, type: "GANDA" },
-        { audio: "pantai", opts: ["panti", "panta", "pantai"], level: 3, type: "DIFTONG" }
+        // Level 1: Suku Kata Terbuka
+        { emoji: "📖", correct: "BACA", opts: ["BACA", "DADA", "Kaki", "Bola"], level: 1 },
+        { emoji: "🧼", correct: "CUCI", opts: ["CICI", "Kaca", "CUCI", "Susu"], level: 1 },
+        // Level 2: Konsonan Mati
+        { emoji: "🍱", correct: "MAKAN", opts: ["Makam", "Malam", "MAKAN", "Mana"], level: 2 },
+        { emoji: "🐘", correct: "GAJAH", opts: ["Gagah", "Gajah", "Gelas", "Gitar"], level: 2 },
+        // Level 3: Diftong / Sengau
+        { emoji: "🍌", correct: "PISANG", opts: ["Pisan", "Pinang", "Pisau", "PISANG"], level: 3 },
+        { emoji: "🏝️", correct: "PULAU", opts: ["Pulai", "PULAU", "Pintu", "Pulau"], level: 3 }
     ];
 
     let current = 0;
     let scores = { 1: 0, 2: 0, 3: 0 };
+    let isAnswering = false;
 
     function startTest() {
-        document.getElementById('screen-start').classList.add('hidden');
-        document.getElementById('screen-test').classList.remove('hidden');
+        document.getElementById('scr-start').classList.add('hidden');
+        document.getElementById('scr-test').classList.remove('hidden');
         loadQuestion();
     }
 
-    function playAudio() {
-        const msg = new SpeechSynthesisUtterance();
-        msg.text = questions[current].audio;
-        msg.lang = 'id-ID';
-        msg.rate = 0.8; // Sedikit lebih lambat agar jelas
-        window.speechSynthesis.speak(msg);
-    }
-
     function loadQuestion() {
+        isAnswering = false;
         const q = questions[current];
-        document.getElementById('bar').style.width = (current / questions.length * 100) + "%";
-        document.getElementById('step-label').innerText = `Misi ${current + 1}: Analisis ${q.type}`;
+        document.getElementById('progress').style.width = ((current / questions.length) * 100) + "%";
+        document.getElementById('qEmoji').innerText = q.emoji;
         
-        const optCont = document.getElementById('options');
-        optCont.innerHTML = '';
-        
-        // Shuffle options
         const shuffled = [...q.opts].sort(() => Math.random() - 0.5);
+        const optContainer = document.getElementById('options');
+        optContainer.innerHTML = '';
         
-        shuffled.forEach(text => {
-            const b = document.createElement('div');
-            b.className = 'opt';
-            b.innerText = text;
-            b.onclick = () => next(text === q.audio);
-            optCont.appendChild(b);
+        shuffled.forEach(o => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerHTML = `${o.toUpperCase()}<div class="feedback-overlay"></div>`;
+            btn.onclick = () => check(btn, o.toUpperCase());
+            optContainer.appendChild(btn);
         });
     }
 
-    function next(isCorrect) {
-        if(isCorrect) {
+    function check(btn, ans) {
+        if(isAnswering) return;
+        isAnswering = true;
+        const correct = questions[current].correct;
+
+        if(ans === correct) {
             scores[questions[current].level]++;
+            btn.classList.add('correct');
+            btn.querySelector('.feedback-overlay').innerText = '✅';
         } else {
-            // Logic Profesional: Jika Level 1 saja salah, langsung stop ke Unit 1
-            if(questions[current].level === 1) return showResult(true);
+            btn.classList.add('wrong');
+            btn.querySelector('.feedback-overlay').innerText = '❌';
         }
 
         current++;
-        if(current < questions.length) {
-            loadQuestion();
-        } else {
-            showResult(false);
-        }
+        setTimeout(() => {
+            if(current < questions.length) loadQuestion();
+            else showResult();
+        }, 1000);
     }
 
-    function showResult(failEarly) {
-        document.getElementById('screen-test').classList.add('hidden');
-        document.getElementById('screen-result').classList.remove('hidden');
-
-        let unit = "";
-        let desc = "";
-
-        if(failEarly || scores[1] < 2) {
-            unit = "UNIT 1: FONDASI SUKU KATA";
-            desc = "Anak belum menguasai pola dasar V-KV (Vokal-Konsonan Vokal). Mulailah dengan drill fonem dan suku kata terbuka tanpa huruf mati.";
+    function showResult() {
+        document.getElementById('scr-test').classList.add('hidden');
+        document.getElementById('scr-result').classList.remove('hidden');
+        
+        let unit = "", desc = "";
+        if(scores[1] < 2) {
+            unit = "MISI UNIT 1";
+            desc = "Hebat! Yuk kita mulai belajar dari <b>Unit 1 (Huruf & Suku Kata)</b> supaya makin jago!";
         } else if(scores[2] < 2) {
-            unit = "UNIT 2: PENAKLUKAN KONSONAN MATI";
-            desc = "Anak lancar di kata dasar, tapi kesulitan pada akhiran huruf mati (KVK). Fokus pada Unit 2 Bagian A (Sengau) dan B (Letup).";
-        } else if(scores[3] < 2) {
-            unit = "UNIT 3: HURUF GANDA & DIFTONG";
-            desc = "Anak sudah bisa membaca kata umum, namun bingung pada kombinasi NY, NG, KH atau vokal rangkap (AI, AU).";
+            unit = "MISI UNIT 2";
+            desc = "Keren! Kamu sudah jago kata dasar. Sekarang yuk latihan <b>Unit 2 (Konsonan Mati)</b>!";
         } else {
-            unit = "UNIT 4: PEMAHAMAN TEMATIK";
-            desc = "Luar biasa! Literasi teknis anak sudah matang. Saatnya masuk ke transisi 'Reading to Learn' dengan teks narasi pendek.";
+            unit = "MISI UNIT 3";
+            desc = "Luar Biasa! Kamu sudah siap untuk tantangan di <b>Unit 3 (Kalimat & Huruf Ganda)</b>!";
         }
-
         document.getElementById('res-unit').innerText = unit;
-        document.getElementById('res-desc').innerText = desc;
+        document.getElementById('res-desc').innerHTML = desc;
     }
 </script>
-
 </body>
 </html>
