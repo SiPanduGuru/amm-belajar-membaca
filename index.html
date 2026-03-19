@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMM Learning Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --p: #FF477E; --s: #4CC9F0; --g: #38B000; --y: #FFB703; --v: #7209B7;
+            --dark: #2B2D42; --bg: #F8F9FA;
+        }
+        body {
+            margin: 0; font-family: 'Quicksand', sans-serif; background: var(--bg);
+            display: flex; flex-direction: column; align-items: center; padding-bottom: 50px;
+        }
+        header {
+            width: 100%; background: var(--p); color: white; padding: 30px 20px;
+            text-align: center; border-bottom: 5px solid rgba(0,0,0,0.1);
+            border-radius: 0 0 30px 30px;
+            box-sizing: border-box;
+        }
+        h1 { font-family: 'Fredoka One'; margin: 0; font-size: 2.2rem; }
+        .subtitle { font-weight: bold; opacity: 0.9; margin-top: 5px; }
+
+        .container { width: 90%; max-width: 600px; margin-top: 25px; }
+        
+        /* Section Styling */
+        .section-title {
+            font-family: 'Fredoka One'; color: var(--dark);
+            margin: 25px 0 10px 5px; font-size: 1.2rem; display: flex; align-items: center;
+        }
+
+        /* Grid Menu */
+        .menu-grid { display: grid; gap: 15px; }
+        .menu-item {
+            background: white; padding: 18px; border-radius: 20px;
+            display: flex; align-items: center; text-decoration: none;
+            color: var(--dark); border: 2px solid #EEE;
+            transition: 0.2s; box-shadow: 0 4px 0 #EEE;
+        }
+        .menu-item:active { transform: translateY(3px); box-shadow: none; }
+        .icon {
+            width: 50px; height: 50px; border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-right: 15px; color: white; flex-shrink: 0;
+        }
+
+        /* Color Themes */
+        .bg-red { background: var(--p); }
+        .bg-blue { background: var(--s); }
+        .bg-green { background: var(--g); }
+        .bg-yellow { background: var(--y); }
+        .bg-purple { background: var(--v); }
+
+        .item-info b { display: block; font-size: 1.05rem; margin-bottom: 2px; }
+        .item-info span { font-size: 0.85rem; color: #666; }
+
+        .start-btn {
+            background: var(--dark); color: white; padding: 15px;
+            border-radius: 20px; text-align: center; margin-bottom: 20px;
+            font-family: 'Fredoka One'; text-decoration: none; display: block;
+            box-shadow: 0 5px 0 #000;
+        }
+        .start-btn:active { transform: translateY(3px); box-shadow: none; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>AMM SUPER APP</h1>
+    <div class="subtitle">Media Belajar Membaca Interaktif</div>
+</header>
+
+<div class="container">
+    
+    <div class="section-title">🔍 LANGKAH PERTAMA</div>
+    <a href="pretes.html" class="start-btn">MULAI PRE-TES (CEK LEVEL ANAK)</a>
+
+    <div class="section-title">🌱 UNIT 1: HURUF & SUKU KATA</div>
+    <div class="menu-grid">
+        <a href="kartu hururf.html" class="menu-item">
+            <div class="icon bg-red">A</div>
+            <div class="item-info"><b>Kartu Huruf</b><span>Mengenal Vokal & Konsonan Dasar</span></div>
+        </a>
+        <a href="AMM Flashcard A-Z.html" class="menu-item">
+            <div class="icon bg-red">🎴</div>
+            <div class="item-info"><b>Flashcard A-Z</b><span>Edisi Cepat untuk HP</span></div>
+        </a>
+        <a href="AMM HURUF.html" class="menu-item">
+            <div class="icon bg-yellow">🎮</div>
+            <div class="item-info"><b>Game AMM Super Fun</b><span>Bermain sambil menebak huruf</span></div>
+        </a>
+        <a href="Suku Kata.html" class="menu-item">
+            <div class="icon bg-blue">🌈</div>
+            <div class="item-info"><b>Hutan Suku Kata</b><span>Belajar pola suku kata pelangi</span></div>
+        </a>
+        <a href="Drill Kombinasi Acak.html" class="menu-item">
+            <div class="icon bg-blue">🔄</div>
+            <div class="item-info"><b>Drill Kombinasi</b><span>Latihan acak Ba-Ca-Da-Sa</span></div>
+        </a>
+    </div>
+
+    <div class="section-title">🚀 UNIT 2: KATA & AKHIRAN MATI</div>
+    <div class="menu-grid">
+        <a href="Detektif Kata (KV-KV).html" class="menu-item">
+            <div class="icon bg-green">🕵️</div>
+            <div class="item-info"><b>Detektif Kata</b><span>Menggabungkan suku kata jadi kata</span></div>
+        </a>
+        <a href="AMM Master Drill A-Z.html" class="menu-item">
+            <div class="icon bg-green">📖</div>
+            <div class="item-info"><b>Master Drill A-Z</b><span>Kurikulum lengkap membaca kata</span></div>
+        </a>
+        <a href="Master Drill Konsonan Mati (A-Z).html" class="menu-item">
+            <div class="icon bg-purple">🛑</div>
+            <div class="item-info"><b>Konsonan Mati (KVK)</b><span>Membaca kata berakhiran huruf mati</span></div>
+        </a>
+    </div>
+
+    <div class="section-title">🏆 UNIT 3: MAHIR MEMBACA</div>
+    <div class="menu-grid">
+        <a href="Kombinasi Huruf Ganda & Diftong.html" class="menu-item">
+            <div class="icon bg-purple">✨</div>
+            <div class="item-info"><b>Huruf Ganda & Diftong</b><span>Belajar NG, NY, AI, AU, dsb.</span></div>
+        </a>
+        <a href="Kartu Baca Kalimat Sederhana.html" class="menu-item">
+            <div class="icon bg-yellow">📝</div>
+            <div class="item-info"><b>Baca Kalimat</b><span>Latihan membaca kalimat pendek</span></div>
+        </a>
+    </div>
+
+</div>
+
+</body>
+</html>
